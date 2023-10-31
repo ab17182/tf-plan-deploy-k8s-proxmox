@@ -1,0 +1,25 @@
+#cloud-config
+package_upgrade: true
+packages: qemu-guest-agent
+
+timezone: America/New_York
+users:
+  - default
+  - name: [your_Linux_standard_account_username]
+    ssh-authorized-keys:
+      - [your_SSH_public_key i.e. ssh-rsa long_string_here user@MachineName]
+    passwd: [your_password_hashed_using mkpasswd i.e. run "echo P@ssw0rd | mkpasswd -m sha-512 -s"]
+    groups: [adm, cdrom, dip, plugdev, lxd, sudo]
+    lock-passwd: false
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+
+runcmd:
+    - sed -i -e '$aAllowUsers [your_Linux_standard_account_username]' /etc/ssh/sshd_config
+    - sudo killall -HUP sshd
+                  
+power_state:
+    delay: now
+    mode: reboot
+    message: Rebooting after cloud-init completion
+    condition: true
